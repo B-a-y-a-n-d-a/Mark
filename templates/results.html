@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduMark - Marking Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .confetti:nth-child(1) { background: #ff6b6b; }
+        .confetti:nth-child(2) { background: #4ecdc4; }
+        .confetti:nth-child(3) { background: #45b7d1; }
+        .confetti:nth-child(4) { background: #f9ca24; }
+        .confetti:nth-child(5) { background: #6c5ce7; }
+        .confetti:nth-child(6) { background: #fd79a8; }
+        .confetti:nth-child(7) { background: #00cec9; }
+        .confetti:nth-child(8) { background: #e17055; }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-top: 2rem;
+        }
+
+        .success-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            animation: bounce 1s ease-out;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) rotate(-90deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: white;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .results-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: slideInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .results-card:nth-child(1) { animation-delay: 0.1s; }
+        .results-card:nth-child(2) { animation-delay: 0.2s; }
+        .results-card:nth-child(3) { animation-delay: 0.3s; }
+        .results-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #10b981, #059669, #10b981);
+            border-radius: 20px;
+            z-index: -1;
+            animation: borderFlow 3s linear infinite;
+        }
+
+        @keyframes borderFlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            color: #1f2937;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            color: #059669;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .detailed-results {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeIn 0.8s ease-out 0.5s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section-title {
+            color: #1f2937;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            border-color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #1f2937;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.7s both;
+        }
+
+        .action-btn {
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            min-width: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #374151;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        .back-link {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-3px);
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .back-link {
+                position: relative;
+                top: auto;
+                left: auto;
+                display: inline-block;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="upload.html" class="back-link">← Back to Upload</a>
+
+    <div class="container">
+        <div class="success-header">
+            <div class="success-icon">🎉</div>
+            <h1>Marking Complete!</h1>
+            <p class="subtitle">Your student scripts have been successfully processed and marked. All results are ready for review and download.</p>
+        </div>
+
+        <div class="results-grid">
+            <div class="results-card">
+                <div class="card-icon">📊</div>
+                <div class="card-title">Scripts Processed</div>
+                <div class="card-value" id="scriptsCount">25</div>
+                <div class="card-description">Total number of student scripts that were successfully marked</div>
+            </div>
+
+            <div class="results-card">
+                <div class="card-icon">📈</div>
+                <div class="card-title">Average Score</div>
+                <div class="card-value" id="avgScore">78.5%</div>
+                <div class="card-description">Overall class average based on marking criteria</div>
+            </div>
+
+            <div class="results-card">
+                <div class="card-icon">⏱️</div>
+                <div class="card-title">Processing Time</div>
+                <div class="card-value" id="processingTime">2m 34s</div>
+                <div class="card-description">Total time taken to process all student scripts</div>
+            </div>
+
+            <div class="results-card">
+                <div class="card-icon">✅</div>
+                <div class="card-title">Success Rate</div>
+                <div class="card-value" id="successRate">100%</div>
+                <div class="card-description">Percentage of scripts processed without errors</div>
+            </div>
+        </div>
+
+        <div class="detailed-results">
+            <h2 class="section-title">📋 Detailed Statistics</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Highest Score</span>
+                    <span class="stat-value">95%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Lowest Score</span>
+                    <span class="stat-value">42%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Pass Rate</span>
+                    <span class="stat-value">88%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Questions Marked</span>
+                    <span class="stat-value">175</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Points</span>
+                    <span class="stat-value">1,963</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Grade Distribution</span>
+                    <span class="stat-value">A:8, B:12, C:3, F:2</span>
+                </div>
+            </div>
+
+            <h2 class="section-title">📊 Score Distribution</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">90-100%</span>
+                    <span class="stat-value">8 students</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">80-89%</span>
+                    <span class="stat-value">7 students</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">70-79%</span>
+                    <span class="stat-value">5 students</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">60-69%</span>
+                    <span class="stat-value">3 students</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Below 60%</span>
+                    <span class="stat-value">2 students</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn btn-primary" onclick="downloadResults()">
+                📥 Download Results
+            </button>
+            <button class="action-btn btn-success" onclick="downloadDetailedReport()">
+                📊 Download Detailed Report
+            </button>
+            <button class="action-btn btn-secondary" onclick="markNewBatch()">
+                📝 Mark New Batch
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Create confetti animation on page load
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.animation = `confettiFall ${2 + Math.random() * 3}s linear forwards`;
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 50);
+            }
+        }
+
+        // Button functions (replace with your actual functionality)
+        function downloadResults() {
+            // Simulate download
+            alert('Downloading results spreadsheet... (Replace with actual download functionality)');
+        }
+
+        function downloadDetailedReport() {
+            // Simulate detailed report download
+            alert('Downloading detailed PDF report... (Replace with actual download functionality)');
+        }
+
+        function markNewBatch() {
+            // Redirect back to upload page
+            window.location.href = 'upload.html'; // or your Flask route
+        }
+
+        // Initialize confetti on page load
+        window.addEventListener('load', () => {
+            setTimeout(createConfetti, 500);
+        });
+
+        // Optional: Update statistics from backend data
+        function updateStats(data) {
+            if (data.scriptsCount) document.getElementById('scriptsCount').textContent = data.scriptsCount;
+            if (data.avgScore) document.getElementById('avgScore').textContent = data.avgScore + '%';
+            if (data.processingTime) document.getElementById('processingTime').textContent = data.processingTime;
+            if (data.successRate) document.getElementById('successRate').textContent = data.successRate + '%';
+        }
+
+        // Example of how to use updateStats with your backend data:
+        // updateStats({
+        //     scriptsCount: 25,
+        //     avgScore: 78.5,
+        //     processingTime: '2m 34s',
+        //     successRate: 100
+        // });
+    </script>
+</body>
+</html>

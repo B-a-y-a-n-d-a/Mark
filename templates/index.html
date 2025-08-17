@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduMark - Upload Files</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            animation: shimmer 3s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 16px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        }
+
+        .logo::after {
+            content: '📝';
+            font-size: 28px;
+        }
+
+        h1 {
+            color: #1a1a2e;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .messages {
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .message {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .upload-form {
+            position: relative;
+            z-index: 2;
+        }
+
+        .file-group {
+            margin-bottom: 2rem;
+        }
+
+        .file-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: block;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-display {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .file-display:hover {
+            background: #f1f5f9;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .file-display.has-file {
+            background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+            border-color: #10b981;
+            border-style: solid;
+        }
+
+        .file-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
+        .file-text {
+            color: #64748b;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .file-text.has-file {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .file-name {
+            color: #374151;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            word-break: break-all;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 2rem 1.5rem;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .file-display {
+                padding: 1.5rem;
+            }
+        }
+
+        .floating-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 1.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 3.5s;"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo"></div>
+            <h1>EduMark</h1>
+            <p class="subtitle">Upload Your Files to Start Marking</p>
+        </div>
+
+        <div class="messages" id="messages">
+            <!-- Flask messages will be displayed here -->
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+            <div class="file-group">
+                <label class="file-label" for="student_file">📄 Student Script</label>
+                <div class="file-input-wrapper">
+                    <input type="file" name="student_file" id="student_file" class="file-input" accept=".xlsx" required>
+                    <div class="file-display" id="studentDisplay">
+                        <div class="file-icon">📊</div>
+                        <div class="file-text">
+                            Drop your Excel file here or click to browse
+                            <br><small>Supported format: .xlsx</small>
+                        </div>
+                        <div class="file-name" id="studentFileName"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="file-group">
+                <label class="file-label" for="memo_file">📋 Marking Memo</label>
+                <div class="file-input-wrapper">
+                    <input type="file" name="memo_file" id="memo_file" class="file-input" accept=".xlsx" required>
+                    <div class="file-display" id="memoDisplay">
+                        <div class="file-icon">📝</div>
+                        <div class="file-text">
+                            Drop your memo file here or click to browse
+                            <br><small>Supported format: .xlsx</small>
+                        </div>
+                        <div class="file-name" id="memoFileName"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                🚀 Start Marking Process
+            </button>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // File input handlers
+        function setupFileInput(inputId, displayId, fileNameId) {
+            const input = document.getElementById(inputId);
+            const display = document.getElementById(displayId);
+            const fileName = document.getElementById(fileNameId);
+
+            // Click functionality - trigger file input when display area is clicked
+            display.addEventListener('click', function() {
+                input.click();
+            });
+
+            input.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    display.classList.add('has-file');
+                    display.querySelector('.file-text').classList.add('has-file');
+                    display.querySelector('.file-text').innerHTML = `File selected: ${file.name}`;
+                    display.querySelector('.file-icon').textContent = '✅';
+                } else {
+                    display.classList.remove('has-file');
+                    display.querySelector('.file-text').classList.remove('has-file');
+                    resetDisplay(inputId === 'student_file' ? 'student' : 'memo');
+                }
+            });
+
+            // Drag and drop functionality
+            display.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                display.style.borderColor = '#667eea';
+                display.style.backgroundColor = '#f1f5f9';
+            });
+
+            display.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                display.style.borderColor = '#cbd5e1';
+                display.style.backgroundColor = '#f8fafc';
+            });
+
+            display.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                    input.files = files;
+                    input.dispatchEvent(new Event('change'));
+                }
+                display.style.borderColor = '#cbd5e1';
+                display.style.backgroundColor = '#f8fafc';
+            });
+        }
+
+        function resetDisplay(type) {
+            const display = document.getElementById(`${type}Display`);
+            if (type === 'student') {
+                display.querySelector('.file-icon').textContent = '📊';
+                display.querySelector('.file-text').innerHTML = 'Drop your Excel file here or click to browse<br><small>Supported format: .xlsx</small>';
+            } else {
+                display.querySelector('.file-icon').textContent = '📝';
+                display.querySelector('.file-text').innerHTML = 'Drop your memo file here or click to browse<br><small>Supported format: .xlsx</small>';
+            }
+        }
+
+        // Initialize file inputs
+        setupFileInput('student_file', 'studentDisplay', 'studentFileName');
+        setupFileInput('memo_file', 'memoDisplay', 'memoFileName');
+
+        // Form submission with progress
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⚡ Processing...';
+            progressBar.style.display = 'block';
+
+            // Simulate progress for demo (replace with actual progress tracking)
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 95) progress = 95;
+                progressFill.style.width = progress + '%';
+            }, 200);
+
+            // In production, remove this and redirect to results page on actual completion
+            setTimeout(() => {
+              clearInterval(interval);
+                progressFill.style.width = '100%';
+
+                // Redirect using navigate (history API)
+                setTimeout(() => {
+                 navigate('/results.html');
+                  showMessage('Files uploaded successfully! Redirecting to results...', 'success');
+                  submitBtn.textContent = '🚀 Start Marking Process';
+                  submitBtn.disabled = false;
+                  progressBar.style.display = 'none';
+
+                  // Reset file inputs
+                  resetDisplay('student');
+                  resetDisplay('memo');
+                }, 1000);
+              }, 1000);
+        });
+
+        // Flash messages function for Flask integration
+        function showMessage(text, type = 'success') {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
